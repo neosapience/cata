@@ -44,3 +44,10 @@ ps:
 .PHONY: ps
 down:
 	@docker-compose down
+
+.PHONY: push
+push:
+	@docker push ${name}:${tag}
+
+
+

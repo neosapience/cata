@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  app:
+    image: neosapience/cata:dev
+    ports:
+      - 8080:8080
+    environment:
+      - ADMIN_ID=admin
+      - ADMIN_PW=admin
+      - REDIS_ADDR=redis:6379
+      - KEY_EXPIRE_MINUTES=1
+
+  redis:
+    image: redis:5.0.5-alpine

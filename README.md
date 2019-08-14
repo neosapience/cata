@@ -8,13 +8,13 @@
 
 * `GET` /api/cb
 * `POST` /api/cb
-* `GET` /api/cb/{cbid}
-* `DELETE` /api/cb/{cbid}
+* `GET` /api/cb/{id}
+* `DELETE` /api/cb/{id}
 * `GET` /api/cbit
 
 ## API endpoints for callback posting
 
-* `POST` /api/cb/{cbid}
+* `POST` /api/cb/{id}
 
 ## TODO:
 * [ ] ui

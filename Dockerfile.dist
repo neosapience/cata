@@ -1,4 +1,8 @@
-FROM golang as build-env
+FROM golang:alpine as builder
+
+RUN apk update \
+    && apk add ca-certificates git \
+    && rm -rf /var/cache/apk/*
 
 RUN go get github.com/gin-gonic/gin
 RUN go get github.com/stretchr/testify/assert
@@ -11,7 +15,8 @@ COPY ./app /go/src/cata/app
 WORKDIR /go/src/cata/app
 
 RUN go get ./
-RUN go build -o app
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o app \
+    && chmod +x app
 
 EXPOSE 8080
 CMD ./app
@@ -21,6 +26,6 @@ CMD ./app
 FROM alpine
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 WORKDIR /app
-COPY --from=build-env /go/src/cata/app/app /app/app
+COPY --from=builder /go/src/cata/app/app /app/app
 ENTRYPOINT [ "/app/app" ]
 EXPOSE 8080

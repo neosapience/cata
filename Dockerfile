@@ -1,5 +1,6 @@
 FROM golang
 
+RUN go env -w GO111MODULE=off
 RUN go get github.com/gin-gonic/gin
 RUN go get github.com/stretchr/testify/assert
 RUN go get github.com/go-redis/redis

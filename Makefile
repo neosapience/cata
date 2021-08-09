@@ -1,12 +1,12 @@
 name := neosapience/cata
-tag := v0.0.1
+tag := v0.0.2
 
 .PHONY: build
 build:
 	docker build -t ${name}:dev .
 
-.PHONY: dist
-dist:
+.PHONY: build-dist
+build-dist:
 	docker build -t ${name}:${tag} . -f Dockerfile.dist
 
 .PHONY: up

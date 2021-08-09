@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"context"
 
 	"github.com/chilts/sid"
 	"github.com/gin-gonic/gin"
@@ -16,8 +17,16 @@ type ApiBase struct {
 	RedisCli *redis.Client
 }
 
+var ctx = context.Background()
+
+func (e *ApiBase) Healthcheck(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"result": "ok",
+	})
+}
+
 func (e *ApiBase) GetListApiCb(c *gin.Context) {
-	keys, err := e.RedisCli.Keys("cb_*").Result()
+	keys, err := e.RedisCli.Keys(ctx, "cb_*").Result()
 	if err != nil {
 		c.JSON(404, gin.H{
 			"result": "File not found",
@@ -31,7 +40,7 @@ func (e *ApiBase) GetListApiCb(c *gin.Context) {
 }
 
 func (e *ApiBase) GetListApiCbit(c *gin.Context) {
-	keys, err := e.RedisCli.Keys("cbit_*").Result()
+	keys, err := e.RedisCli.Keys(ctx, "cbit_*").Result()
 	if err != nil {
 		c.JSON(404, gin.H{
 			"result": "File not found",
@@ -46,7 +55,7 @@ func (e *ApiBase) GetListApiCbit(c *gin.Context) {
 
 func (e *ApiBase) PostApiCb(c *gin.Context) {
 	key := "cb_" + sid.IdBase64()
-	err := e.RedisCli.SetNX(key, "this is cb addr", 0).Err()
+	err := e.RedisCli.SetNX(ctx, key, "this is cb addr", 0).Err()
 
 	if err != nil {
 		c.JSON(400, gin.H{"result": false, "error": err.Error()})
@@ -60,7 +69,7 @@ func (e *ApiBase) PostApiCb(c *gin.Context) {
 func (e *ApiBase) DeleteApiCb(c *gin.Context) {
 	id := c.Param("id")
 
-	val, err := e.RedisCli.Exists(id).Result()
+	val, err := e.RedisCli.Exists(ctx, id).Result()
 	if err != nil || val == 0 {
 		c.JSON(404, gin.H{
 			"result": false,
@@ -68,7 +77,7 @@ func (e *ApiBase) DeleteApiCb(c *gin.Context) {
 		})
 		return
 	}
-	e.RedisCli.Del(id)
+	e.RedisCli.Del(ctx, id)
 	c.JSON(200, gin.H{
 		"result": "Ok",
 	})
@@ -76,7 +85,7 @@ func (e *ApiBase) DeleteApiCb(c *gin.Context) {
 
 func (e *ApiBase) GetOneApiCb(c *gin.Context) {
 	id := c.Param("id")
-	keys, err := e.RedisCli.Keys("*_" + id).Result()
+	keys, err := e.RedisCli.Keys(ctx, "*_" + id).Result()
 	if err != nil {
 		c.JSON(404, gin.H{
 			"result": "File not found",
@@ -87,7 +96,7 @@ func (e *ApiBase) GetOneApiCb(c *gin.Context) {
 	var ret []map[string]interface{}
 	for _, key := range keys {
 		var data map[string]interface{}
-		val, err := e.RedisCli.Get(key).Result()
+		val, err := e.RedisCli.Get(ctx, key).Result()
 		if err != nil {
 			c.JSON(400, gin.H{"result": false, "error": err.Error()})
 			return
@@ -106,7 +115,7 @@ func (e *ApiBase) GetOneApiCb(c *gin.Context) {
 func (e *ApiBase) PostOneApiCb(c *gin.Context) {
 	expireMinutes, _ := strconv.ParseInt(os.Getenv("KEY_EXPIRE_MINUTES"), 10, 64)
 	id := c.Param("id")
-	val, err := e.RedisCli.Exists(id).Result()
+	val, err := e.RedisCli.Exists(ctx, id).Result()
 
 	if err != nil || val == 0 {
 		c.JSON(404, gin.H{
@@ -132,7 +141,7 @@ func (e *ApiBase) PostOneApiCb(c *gin.Context) {
 	}
 
 	detailKey := "cbit_" + sid.IdBase64() + "_" + id
-	err = e.RedisCli.SetNX(detailKey, data, time.Minute*time.Duration(expireMinutes)).Err()
+	err = e.RedisCli.SetNX(ctx, detailKey, data, time.Minute*time.Duration(expireMinutes)).Err()
 	if err != nil {
 		c.JSON(400, gin.H{"result": false, "error": err.Error()})
 		return

@@ -42,5 +42,10 @@ func setupRouter() *gin.Engine {
 		anybody.POST("/:id", svc.PostOneApiCb)
 	}
 
+	healthcheck := route.Group("/api/health")
+	{
+		healthcheck.GET("", svc.Healthcheck)
+	}
+
 	return route
 }
